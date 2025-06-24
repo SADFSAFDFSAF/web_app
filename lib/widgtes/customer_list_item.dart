@@ -1,0 +1,113 @@
+import 'package:flutter/material.dart';
+
+import '../models/customer.dart';
+
+class CustomerListItem extends StatelessWidget {
+  final Customer customer;
+  final VoidCallback onMarkFinished;
+
+  const CustomerListItem({
+    required this.customer,
+    required this.onMarkFinished,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isSeated = customer.status == CustomerStatus.seated;
+    final bool isFinished = customer.status == CustomerStatus.finished;
+
+    return Draggable<String>(
+      data: customer.id,
+      feedback: Material(
+        color: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+            color: Colors.blueAccent.withOpacity(0.7),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            customer.name,
+            style: const TextStyle(color: Colors.white, fontSize: 16),
+          ),
+        ),
+      ),
+      childWhenDragging: Opacity(
+        opacity: 0.5,
+        child: _buildItemContent(context),
+      ),
+      child: _buildItemContent(context),
+    );
+  }
+
+  Widget _buildItemContent(BuildContext context) {
+    return Card(
+      color: Colors.grey[800],
+      margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          children: [
+            Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: customer.status == CustomerStatus.finished
+                    ? Colors.grey[600]
+                    : Colors.blue[300],
+                borderRadius: BorderRadius.circular(4),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                '${customer.numberOfGuests}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    customer.name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    'Arrival: ${customer.arrivalTime.hour}:${customer.arrivalTime.minute.toString().padLeft(2, '0')}',
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
+                  if (customer.assignedTableId != null &&
+                      customer.status == CustomerStatus.seated)
+                    Text(
+                      'Table: ${customer.assignedTableId}',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (customer.status == CustomerStatus.seated)
+              IconButton(
+                icon: Icon(Icons.check_circle_outline, color: Colors.green),
+                onPressed: onMarkFinished,
+              ),
+            if (customer.status == CustomerStatus.finished)
+              IconButton(
+                icon: Icon(Icons.cleaning_services, color: Colors.orange),
+                onPressed: () {},
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
